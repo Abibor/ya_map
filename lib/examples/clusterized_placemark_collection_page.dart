@@ -153,7 +153,7 @@ class _ClusterizedPlacemarkCollectionExampleState extends State<_ClusterizedPlac
                   // Создает вертикальный массив дочерних элементов.
                   child: Column(
                       children: <Widget>[
-                        //Создает горизонтальный массив дочерних элементов.
+                        //Row Создает горизонтальный массив дочерних элементов.
                         Row(
                           // spaceAround - Равномерно распределите свободное пространство между дочерними элементами,
                           // а также половину этого пространства до и после первого и последнего дочерних элементов.
@@ -243,6 +243,7 @@ class _ClusterizedPlacemarkCollectionExampleState extends State<_ClusterizedPlac
                                   setState(() {
                                     // добавляем в список объекты mapObject содержащие картинку и метку
                                     mapObjects.add(mapObject);
+                                    printWrapped("add1 +$mapObjects");
                                   });
                                 },
                                 title: 'Add'
@@ -256,10 +257,14 @@ class _ClusterizedPlacemarkCollectionExampleState extends State<_ClusterizedPlac
                                     print("null elements");
                                     return;
                                   }
+
                                   final mapObject = mapObjects
                                       .firstWhere((el) => el.mapId == mapObjectId) as ClusterizedPlacemarkCollection;
 
                                   setState(() {
+                                    // В массиве mapObjects происходит замена placemarks (меток) путем создания измененной копии copyWith
+                                    // Указанные поля - placemarks, получат указанное значение,
+                                    // все остальные поля получат такое же значение из текущего объекта.
                                     mapObjects[mapObjects.indexOf(mapObject)] = mapObject.copyWith(placemarks: [
                                       PlacemarkMapObject(
                                           mapId: MapObjectId('placemark_2'),
@@ -287,22 +292,25 @@ class _ClusterizedPlacemarkCollectionExampleState extends State<_ClusterizedPlac
                                       ),
                                     ]);
                                   });
+                                  printWrapped("update + $mapObjects");
                                 },
                                 title: 'Update'
                             ),
                             ControlButton(
                                 onPressed: () async {
                                   setState(() {
-                                    //Удаляет из этого списка все объекты.
+                                    //Удаляет из mapObjects списка все объекты.
                                     mapObjects.removeWhere((el) => el.mapId == mapObjectId);
+                                    printWrapped("removed + $mapObjects");
                                   });
                                 },
                                 title: 'Remove'
                             )
                           ],
                         ),
+                        // Text создает строку из kPlacemarkCount - 500 случайных элементов
                         Text('Set of $kPlacemarkCount placemarks'),
-                        // Создает горизонтальный массив дочерних элементов.
+                        // Создает горизонтальный массив дочерних элементов Add и Remove
                         Row(
                             mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: <Widget>[
@@ -310,18 +318,24 @@ class _ClusterizedPlacemarkCollectionExampleState extends State<_ClusterizedPlac
                               // kPlacemarkCount - 500 меток, координаты которых определяются рандомно
                               ControlButton(
                                   onPressed: () async {
+                                    printWrapped("mapObjects before add2: $mapObjects");
+                                    // Проверка если какой-либо из el массива mapObjects
                                     if (mapObjects.any((el) => el.mapId == largeMapObjectId)) {
                                       print("tyt");
                                       return;
                                     }
                                     print("tyt1");
+                                    // Создаем массив с ID = largeMapObjectId
                                     final largeMapObject = ClusterizedPlacemarkCollection(
                                       mapId: largeMapObjectId,
                                       radius: 30,
                                       minZoom: 15,
                                       onClusterAdded: (ClusterizedPlacemarkCollection self, Cluster cluster) async {
                                         return cluster.copyWith(
+                                            // cluster.appearance - appearance это метка, указывающая, как визуально отображать кластер на [ЯндексКарте]
+                                            /// берется метка из картинок
                                             appearance: cluster.appearance.copyWith(
+                                                // opacity затемнение картинки(метки)
                                                 opacity: 0.75,
                                                 icon: PlacemarkIcon.single(PlacemarkIconStyle(
                                                     image: BitmapDescriptor.fromBytes(await _buildClusterAppearance(cluster)),
@@ -330,9 +344,11 @@ class _ClusterizedPlacemarkCollectionExampleState extends State<_ClusterizedPlac
                                             )
                                         );
                                       },
+                                      // При нажатии на зону cluster выходит сообщение
                                       onClusterTap: (ClusterizedPlacemarkCollection self, Cluster cluster) {
                                         print('Tapped cluster');
                                       },
+                                      // Создается массив меток длиной = kPlacemarkCount
                                       placemarks: List<PlacemarkMapObject>.generate(kPlacemarkCount, (i) {
                                         return PlacemarkMapObject(
                                             mapId: MapObjectId('placemark_$i'),
@@ -348,7 +364,13 @@ class _ClusterizedPlacemarkCollectionExampleState extends State<_ClusterizedPlac
                                     );
 
                                     setState(() {
+                                      // В массив объектов - mapObjects, добавляем массив объектов largeMapObject,
+                                      // а это ClusterizedPlacemarkCollection - коллекция [PlacemarkMapObject] для отображения на [ЯндексКарте] с 500 метками
                                       mapObjects.add(largeMapObject);
+                                      printWrapped("add2 + $mapObjects");
+                                      Future.delayed(Duration(milliseconds: 1000), () {
+                                        // Do something
+                                      });
                                     });
                                   },
                                   title: 'Add'
@@ -356,8 +378,9 @@ class _ClusterizedPlacemarkCollectionExampleState extends State<_ClusterizedPlac
                               ControlButton(
                                   onPressed: () async {
                                     setState(() {
-                                      //Удаляет из этого списка все объекты.
+                                      //Удаляет из этого списка объекты cодержащие Id массива largeMapObjectId
                                       mapObjects.removeWhere((el) => el.mapId == largeMapObjectId);
+                                      printWrapped("Removed mapObjects: + $mapObjects");
                                     });
                                   },
                                   title: 'Remove'
@@ -370,5 +393,12 @@ class _ClusterizedPlacemarkCollectionExampleState extends State<_ClusterizedPlac
           )
         ]
     );
+  }
+
+  void printWrapped(String text) {
+    //final pattern = RegExp('.{1,100000}'); // 800 is the size of each chunk
+    final pattern = RegExp('.{1,1000}'); // 800 is the size of each chunk
+
+    pattern.allMatches(text).forEach((match) => print(match.group(0)));
   }
 }
