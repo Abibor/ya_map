@@ -1,0 +1,48 @@
+void main() => runApp(MyApp());
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Flutter Demo',
+      theme: ThemeData(
+        primaryColor: Colors.blue,
+      ),
+      home: MapSample(),
+    );
+  }
+}
+
+class MapSample extends StatefulWidget {
+  @override
+  State<MapSample> createState() => MapSampleState();
+}
+
+class MapSampleState extends State<MapSample> {
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  static final CameraPosition _moscow = CameraPosition(
+    target: Point(longitude: 55.7517769362014, latitude: 37.61637210845947),
+    zoom: 15,
+  );
+  static final CameraPosition _home = CameraPosition(
+    target: Point(longitude: 107.643230, latitude: 51.822586),
+    zoom: 15,
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+        body: YandexMap(
+          //mapType: MapType.satellite,
+          logoAlignment: MapAlignment(
+              horizontal: HorizontalAlignment.center,
+              vertical: VerticalAlignment.bottom
+          ),
+        )
+    );
+  }
+}
