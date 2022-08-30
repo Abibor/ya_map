@@ -395,9 +395,10 @@ class _ClusterizedPlacemarkCollectionExampleState extends State<_ClusterizedPlac
     );
   }
 
+  // Метод который выводит все
   void printWrapped(String text) {
     //final pattern = RegExp('.{1,100000}'); // 800 is the size of each chunk
-    final pattern = RegExp('.{1,1000}'); // 800 is the size of each chunk
+    final pattern = RegExp('.{1,1000}'); // 800 is the size of each chunk 1000 символов это максимум
 
     pattern.allMatches(text).forEach((match) => print(match.group(0)));
   }
